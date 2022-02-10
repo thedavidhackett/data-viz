@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <!-- set styles on the top -->
+    <style>
+      .chart-container {
+        padding: 1rem;
+      }
+
+      svg {
+        overflow: visible;
+      }
+
+      .points {
+        fill-opacity: 0.5;
+        fill: #c0cad8;
+        stroke: #333333;
+        stroke-width: 0.5px;
+      }
+
+      .y.axis {
+        font-size: 14px;
+        stroke-width: 0.5px;
+      }
+
+      .y.axis .tick line {
+        stroke: #999;
+      }
+
+      .y.axis .domain {
+        display: none;
+      }
+
+      .x.axis {
+        font-size: 14px;
+        stroke-width: 0.5px;
+      }
+
+      .x.axis .tick line {
+        stroke: #999;
+      }
+
+      .x.axis .domain {
+        display: none;
+      }
+
+      .pop-up {
+        position: absolute;
+        border: 1px solid black;
+        border-radius: 1px;
+        line-height: 1.2;
+        width: 200px;
+        pointer-events: none;
+        background-color: white;
+        padding: 10px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="chart-container">
+      <h1 class="headline">
+        Test Scores for 3rd Grade in 2000 Large Districts
+      </h1>
+
+      <svg width="800px" height="500px"></svg>
+
+      <div class="pop-up"></div>
+      <div id="ledMatrix"></div>
+    </div>
+  </body>
+
+  <!-- add your script blocks at the end -->
+  <script src="https://d3js.org/d3.v6.min.js"></script>
+  <!-- we're using d3 version 6 (the latest version) for all out work -->
+
+  <script>
+    let width = 800;
+    let height = 500;
+    let margin = { top: 0, right: 0, bottom: 0, left: 0 };
+
+    d3.csv("largest_districts.csv").then((data) => {
+      data.forEach((row) => {
+        row.ses = +row.ses;
+        row.mnav3poolgcs = +row.mnav3poolgcs;
+        row.totavg = +row.totavg;
+      });
+
+      data.sort((a, b) => d3.ascending(a.totavg, b.totavg));
+
+      let r = d3
+        .scaleSqrt()
+        .domain([0, d3.max(data, (d) => d.totavg)])
+        .range([1, 50]);
+
+      let xaxis = d3
+        .scaleLinear()
+        .domain(d3.extent(data.map((d) => d.ses)))
+        .range([margin.left, width - margin.right]);
+
+      let yaxis = d3
+        .scaleLinear()
+        .domain(d3.extent(data.map((d) => d.mnav3poolgcs)))
+        .range([height - margin.bottom, margin.top]);
+
+      let xaxisSettings = d3.axisBottom(xaxis).ticks(3).tickSize(10);
+
+      let yaxisSettings = d3.axisLeft(yaxis).ticks(5).tickSize(-width);
+
+      let svg = d3.select("body").select("svg");
+
+      let yaxisTicks = svg
+        .append("g")
+        .attr("class", "y axis")
+        .call(yaxisSettings);
+
+      let xaxisTicks = svg
+        .append("g")
+        .attr("class", "x axis")
+        .call(xaxisSettings)
+        .attr("transform", `translate(0, ${height - margin.bottom})`);
+
+      let popup = d3.select(".pop-up");
+
+      let points = svg
+        .append("g")
+        .selectAll(".points")
+        .data(data)
+        .join("circle")
+        .attr("id", (d) => `p-${d.leaidC}`)
+        .attr("class", "points")
+        .attr("cx", (d) => xaxis(d.ses))
+        .attr("cy", (d) => yaxis(d.mnav3poolgcs))
+        .attr("r", (d) => r(d.totavg));
+
+      points.on("mouseover", (event, d) => {
+        let reScaleLang = d3
+          .scaleThreshold()
+          .domain([0])
+          .range(["below", "above"]);
+
+        let diff = +d.mnav3poolgcs - 3;
+        let lang = `In ${d.newname}, ${d.nyt_abbrev} the typical 3rd grade student `;
+        lang +=
+          d3.format(".1f")(Math.abs(diff)) +
+          " years " +
+          reScaleLang(diff) +
+          " his or her grade level.";
+
+        popup
+          .style("opacity", 1)
+          .style("left", event.x - 100 + "px")
+          .style("top", event.y - 150 + "px")
+          .html(lang);
+
+        points
+          .style("fill-opacity", 0.5)
+          .style("fill", "#c0cad8")
+          .style("stroke", "#333333")
+          .style("stroke-width", "0.5px");
+
+        svg
+          .select(`#p-${d.leaidC}`)
+          .style("stroke", "black")
+          .style("stroke-width", 2)
+          .style("fill", "yellow")
+          .style("fill-opacity", 1)
+          .raise();
+      });
+
+      points.on("mouseout", (event, d) => {
+        points
+          .style("fill-opacity", 0.5)
+          .style("fill", "#c0cad8")
+          .style("stroke", "#333333")
+          .style("stroke-width", "0.5px");
+
+        popup.style("opacity", 0);
+      });
+    });
+
+    heightRow = 5;
+    widthRow = 4;
+
+    for (let i = 0; i <= heightRow; i++) {
+      let row = document.createElement("div");
+      row.setAttribute("class", "heightRow");
+      for (let i = 0; i <= widthRow; i++) {
+        row.appendChild(document.createElement("div"));
+      }
+      document.querySelector("#ledMatrix").appendChild(row);
+    }
+
+    //create width rows
+  </script>
+</html>
