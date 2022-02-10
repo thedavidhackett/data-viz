@@ -115,20 +115,15 @@
       //in this case we need to use scaleLinear because we're dealin linear data
       let y = d3
         .scaleLinear()
-        .domain(
-          d3.extent(
-            data.map(function (d) {
-              return d.SP500;
-            })
-          )
-        )
+        .domain([0, d3.max(data, (d) => d.SP500)])
         .range([height - margin.bottom, margin.top]);
 
       //define the settings for our axes
       //https://github.com/d3/d3-axis
       let yAxisSettings = d3
         .axisLeft(y) //set axis to the left
-        .ticks(5) //approx how many ticks, the function will not necesarily give you that number
+        .tickValues([0, 2000, 4000])
+        //.ticks(5) //approx how many ticks, the function will not necesarily give you that number
         .tickSize(-width) //size of tick lines
         .tickFormat(d3.format(".0f")) //what format do you want https://github.com/d3/d3-format
         .tickPadding(10); //distance from tick labels to tick marks
@@ -160,7 +155,7 @@
         .call(yAxisSettings)
         .attr("transform", `translate(${margin.left},0)`);
 
-      let line = d3
+      /*let line = d3
         .line() //define a line function
         .defined((d) => !isNaN(d.SP500))
         .x(function (d) {
@@ -178,7 +173,22 @@
         .attr("d", line(data))
         .style("fill", "none")
         .style("stroke", "darkblue")
-        .style("stroke-width", 1.8);
+        .style("stroke-width", 1.8);*/
+
+      let area = d3
+        .area()
+        .defined((d) => !isNaN(d.SP500))
+        .x((d) => x(d.date))
+        .y0(y(0))
+        .y1((d) => y(d.SP500));
+
+      let line_path = svg
+        .append("path") //Add a grouping element. It's useful to organize svg elements. https://developer.mozilla.org/en-US/docs/Web/SVG/Element/g
+        .attr("class", "area") // Give circles a class name.
+        .attr("d", area(data))
+        .style("fill", "blue")
+        .style("stroke", "none")
+        .style("fill-opacity", 0.5);
     });
   </script>
 </html>
