@@ -57,9 +57,16 @@
         text-transform: uppercase;
       }
 
+      .note {
+        max-width: 800px;
+        font-size: 12px;
+        color: #333;
+      }
       .source {
         max-width: 1000px;
-        margin: 0 auto;
+      }
+      #year {
+        color: red;
       }
     </style>
   </head>
@@ -70,7 +77,16 @@
         Healthcare by income in <span id="year">2009</span>
       </h1>
 
-      <svg width="1050px" height="575px"></svg>
+      <svg width="1050px" height="550px"></svg>
+      <p class="note">
+        Note: The income measure used here is disposable income, which is
+        defined as market income plus cash transfers from the government and
+        noncash benefits like food stamps and public housing. It excludes taxes,
+        out-of-pocket medical spending, insurance premiums and other expenses.
+        There have been small changes in the census questionnaire between the
+        two survey dates. Source: Current Population Survey, analysis by Matt
+        Bruenig
+      </p>
       <p class="source">
         Source: Current Population Survey, analysis by Matt Bruenig
       </p>
@@ -92,6 +108,8 @@
     d3.csv("healthcare-disposable-inc.csv").then(function (raw) {
       let data20 = raw.filter((d) => d.year == "2020");
       let data09 = raw.filter((d) => d.year == "2009");
+
+      console.log(data09);
 
       data09.forEach((d) => {
         for (let prop in d) {

@@ -13,9 +13,11 @@
 
       .label {
         font-weight: bold;
+        font-size: 0.9rem;
       }
 
       .label.BradTo00 {
+        font-weight: bold;
         font-size: 1.5rem;
       }
 
@@ -44,7 +46,7 @@
 
   <body>
     <div class="chart-container">
-      <h1 class="headline">Playoff Wins</h1>
+      <h1 class="headline">Quarterback Playoff Wins</h1>
       <div style="margin-bottom: 10px">
         <button class="by-year update active">By Year</button
         ><button class="by-age update">By Age</button>
@@ -122,6 +124,7 @@
         ];
 
         let current_data = "year";
+        let count = 0;
 
         let line_path = svg.append("g");
         let labels = svg.append("g");
@@ -143,18 +146,13 @@
           } else {
             x = d3
               .scaleLinear()
-              .domain(
-                d3.extent(
-                  stats.map(function (d) {
-                    return d[data];
-                  })
-                )
-              ) //d3 extent
+              .domain([20, 44]) //d3 extent
               .range([margin.right, width - margin.left]);
           }
 
           let line = d3
             .line() //define a line function
+            .defined((d) => d.age <= 44)
             .x(function (d) {
               return x(d[data]);
             }) //accessing date
@@ -198,7 +196,7 @@
             .join("text")
             .attr("class", (d) => `label ${d[0]}`)
             .transition()
-            .duration(500)
+            .duration(count == 0 ? 0 : 500)
             .attr("x", (d) => x(d[1][d[1].length - 1][data]))
             .attr("y", (d) => y(d[1][d[1].length - 1].playoff_wins))
             .text(
@@ -270,6 +268,7 @@
               svg.select(`.line.${d[0]}`).style("stroke", "#999");
             }
           });
+          count++;
         }
 
         update(current_data);
